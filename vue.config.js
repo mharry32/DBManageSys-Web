@@ -14,7 +14,6 @@ module.exports = {
                 changeOrigin: true,
             }
         }
-    },
-    outputDir: "$(Build.ArtifactStagingDirectory)/Output"
+    }
 
 }
