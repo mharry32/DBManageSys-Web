@@ -92,7 +92,7 @@ export default {
       this.menuItems = res.data;
 
       let strs = localStorage.getItem("indexStrs");
-      if (strs != "") {
+      if (strs != "" && strs != null) {
         let strsAfterSplit = strs.split(",");
         this.title =
           this.menuItems[strsAfterSplit[0]].subMenus[strsAfterSplit[1]].name;
