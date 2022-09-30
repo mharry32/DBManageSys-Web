@@ -110,7 +110,7 @@ export default {
       .get("/api/users/current")
       .then((res) => {
         // console.log(res.data.name);
-        this.currentUser = res.data.name;
+        this.currentUser = res.data.userName;
       })
       .catch((err) => {
         this.$router.push("/admin/login");

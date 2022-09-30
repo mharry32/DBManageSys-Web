@@ -7,7 +7,7 @@
       element-loading-text="拼命加载中"
     >
       <el-table-column
-        prop="roleName"
+        prop="name"
         label="角色"
         width="300"
       ></el-table-column>
@@ -106,10 +106,7 @@ export default {
         .then(() => {
           this.tableLoading = true;
           axios
-            .post("/api/users/deleterole", {
-              roleid: row.roleid,
-              roleName: row.roleName,
-            })
+            .delete("/api/role/"+row.id)
             .then((res) => {
               //   console.log(res);
               this.getInfo();
@@ -141,20 +138,17 @@ export default {
         this.addDialogFormVisible = false;
         let newRole = { roleName: this.addRoleName };
         axios
-          .post("/api/users/addroles", newRole)
+          .post("/api/role", newRole)
           .then((res) => {
             // console.log(res.data.success);
-            if (res.data.success) {
+           
               this.$message({
                 type: "success",
                 message: "添加成功!",
               });
               this.getInfo();
               this.addRoleName = "";
-            } else {
-              this.$message.error(res.data.message);
-              this.tableLoading = false;
-            }
+          
           })
           .catch((err) => {
             if (err.response.status === 401) {
@@ -164,7 +158,7 @@ export default {
             }
           });
       } else {
-        this.$message.error("用户名和密码不能为空");
+        this.$message.error("角色名不能为空");
       }
     },
   },

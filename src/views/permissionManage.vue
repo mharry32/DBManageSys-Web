@@ -7,7 +7,7 @@
       element-loading-text="拼命加载中"
     >
       <el-table-column
-        prop="roleName"
+        prop="name"
         label="角色"
         width="300"
       ></el-table-column>
@@ -28,8 +28,8 @@
             <el-tree
               :data="allMenuData"
               :props="defaultProps"
+              node-key="nodeKey"
               show-checkbox
-              node-key="menuid"
               ref="tree"
               v-loading="editDialogLoading"
               element-loading-text="拼命加载中"
@@ -48,40 +48,6 @@
           </el-dialog>
         </template>
       </el-table-column>
-
-      <el-table-column align="right">
-        <template slot="header" slot-scope="scope">
-          <el-button
-            type="primary"
-            icon="el-icon-plus"
-            class="addUser"
-            @click="handleAdd()"
-            >新增</el-button
-          >
-          <!-- 按新增按钮后的弹框 -->
-          <el-dialog
-            title="新增角色"
-            :visible.sync="addDialogFormVisible"
-            class="edit"
-          >
-            <el-form @submit.native.prevent>
-              <el-form-item
-                label="角色名："
-                :label-width="formLabelWidth"
-                class="name"
-              >
-                <el-input v-model="addRoleName" autocomplete="off"></el-input>
-              </el-form-item>
-            </el-form>
-            <div slot="footer" class="dialog-footer">
-              <el-button @click="addDialogFormVisible = false">取 消</el-button>
-              <el-button type="primary" @click="addNewConfirmed"
-                >确 定</el-button
-              >
-            </div>
-          </el-dialog>
-        </template></el-table-column
-      >
     </el-table>
   </div>
 </template>
@@ -97,7 +63,6 @@ export default {
       // currentId: -1,
       formLabelWidth: "120px",
       addRoleName: "",
-      addDialogFormVisible: false,
       tableLoading: false,
       pmsManageDialogVisible: false,
       allMenuData: [],
@@ -138,17 +103,36 @@ export default {
       this.pmsManageDialogVisible = true;
       this.editDialogLoading = true;
       this.isEditConfirmDisabled = true;
-      // console.log(row.roleid);
-      this.currentRoleId = row.roleid;
+  
       axios.get("/api/users/allmenus").then((res) => {
-        console.log(res.data);
-        this.allMenuData = res.data;
+        
+        let treeData = res.data;
+        treeData.forEach(m=>{
+          m.nodeKey = 'm'+m.id;
+          m.subMenus.forEach(s=>{
+            s.nodeKey = 'm'+m.id+'s'+s.id;
+          })
+        })
+        this.allMenuData = treeData;
+        this.currentRoleId = row.id;
         axios
-          .get("/api/users/menusbyrole" + "?roleid=" + this.currentRoleId)
+          .get("/api/users/menusbyrole/" + row.id)
           .then((res) => {
             console.log(res.data);
-            this.defaultCheckbox = res.data;
-            this.$refs.tree.setCheckedKeys(this.defaultCheckbox);
+            let menuData = res.data;
+            let checkedKeys = [];
+
+            treeData.forEach(element => {
+              element.subMenus.forEach(
+                sub=>{
+                  if(menuData.indexOf(sub.id)!=-1){
+                    checkedKeys.push(sub.nodeKey)
+                  }
+                }
+              )
+            });
+
+            this.$refs.tree.setCheckedKeys(checkedKeys);
             this.editDialogLoading = false;
             this.isEditConfirmDisabled = false;
           });
@@ -168,11 +152,21 @@ export default {
       this.editDialogLoading = true;
       this.isEditConfirmDisabled = true;
       // console.log(this.$refs.tree.getCheckedKeys());
-      this.defaultCheckbox = this.$refs.tree.getCheckedKeys();
+
+      let checkedNodes = this.$refs.tree.getCheckedNodes();
+
+      console.log(checkedNodes);
+      let menuIds = [];
+      checkedNodes.forEach(main => {
+        if(!main.subMenus){
+            menuIds.push(main.id)
+        }
+      });
+      
       axios
-        .post("/api/users/modifypermission", {
+        .put("/api/users/modifypermission", {
           roleid: this.currentRoleId,
-          menuids: this.defaultCheckbox,
+          menuids: menuIds,
         })
         .then((res) => {
           this.pmsManageDialogVisible = false;
@@ -184,43 +178,6 @@ export default {
         });
     },
 
-    // 监听新增按钮
-    handleAdd() {
-      this.addDialogFormVisible = true;
-    },
-    // 监听新增按钮里面的确认按钮
-    addNewConfirmed() {
-      this.tableLoading = true;
-      if (this.addRoleName.length !== 0) {
-        this.addDialogFormVisible = false;
-        let newRole = { roleName: this.addRoleName };
-        axios
-          .post("/api/users/addroles", newRole)
-          .then((res) => {
-            // console.log(res.data.success);
-            if (res.data.success) {
-              this.$message({
-                type: "success",
-                message: "添加成功!",
-              });
-              this.getInfo();
-              this.addRoleName = "";
-            } else {
-              this.$message.error(res.data.message);
-              this.tableLoading = false;
-            }
-          })
-          .catch((err) => {
-            if (err.response.status === 401) {
-              this.$router.push("/admin/login");
-            } else {
-              this.$message("新增用户失败！");
-            }
-          });
-      } else {
-        this.$message.error("用户名和密码不能为空");
-      }
-    },
   },
 };
 </script>

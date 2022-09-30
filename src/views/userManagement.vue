@@ -2,12 +2,12 @@
   <div id="announceManage">
     <el-table :data="userData" style="width: 100%">
       <el-table-column
-        prop="username"
+        prop="userName"
         label="用户"
         width="300"
       ></el-table-column>
       <el-table-column
-        prop="rolename"
+        prop="role.name"
         label="角色"
         width="300"
       ></el-table-column>
@@ -30,9 +30,9 @@
               >角色：<el-select v-model="roleid" placeholder="请选择">
                 <el-option
                   v-for="item in allRoles"
-                  :key="item.roleid"
-                  :label="item.roleName"
-                  :value="item.roleid"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
                 >
                 </el-option> </el-select
             ></span>
@@ -76,17 +76,6 @@
               >
                 <el-input v-model="addUserName" autocomplete="off"></el-input>
               </el-form-item>
-              <el-form-item
-                label="密码："
-                :label-width="formLabelWidth"
-                class="psd"
-              >
-                <el-input
-                  v-model="password"
-                  autocomplete="off"
-                  show-password
-                ></el-input>
-              </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
               <el-button @click="addDialogFormVisible = false">取 消</el-button>
@@ -113,12 +102,12 @@ export default {
       formLabelWidth: "120px",
       addUserName: "",
       addDialogFormVisible: false,
-      password: "",
       editUserRoleVisible: false,
       currentEditedUserName: "",
       currentEditedUserId: "",
       allRoles: [],
-      roleid: "",
+      role: "",
+      roleid:0
     };
   },
   created() {
@@ -145,13 +134,15 @@ export default {
     // 监听编辑按钮
     userRoleEdit(index, row) {
       this.editUserRoleVisible = true;
-      console.log(row);
-      if (row.roleid == 0) {
-        this.roleid = "";
-      } else {
-        this.roleid = row.roleid;
-      }
-      this.currentEditedUserName = row.username;
+        this.role = row.role;
+        if(row.role.id==0)
+        {
+          this.roleid = "";
+        }
+        else{
+          this.roleid = row.role.id;
+        }
+      this.currentEditedUserName = row.userName;
       this.currentEditedUserId = row.id;
       axios.get("/api/users/roles").then((res) => {
         console.log(res.data);
@@ -163,9 +154,9 @@ export default {
     confirmNewUserRole() {
       this.editUserRoleVisible = false;
       axios
-        .post("/api/users/modifyrole", {
-          id: this.currentEditedUserId,
-          roleid: this.roleid,
+        .put("/api/users/modifyrole", {
+          UserId: this.currentEditedUserId,
+          RoleId: this.roleid,
         })
         .then((res) => {
           this.$message({
@@ -178,7 +169,7 @@ export default {
           if (err.response.status === 401) {
             this.$router.push("/admin/login");
           } else {
-            this.$message("删除失败！");
+            this.$message("修改失败！");
           }
         });
     },
@@ -193,11 +184,7 @@ export default {
       })
         .then(() => {
           axios
-            .delete("/api/users", {
-              data: {
-                id: row.id,
-              },
-            })
+            .delete("/api/users/"+row.id)
             .then((res) => {
               //   console.log(res);
               this.getInfo();
@@ -222,24 +209,18 @@ export default {
     },
     // 监听新增按钮里面的确认按钮
     addNewConfirmed() {
-      if (this.addUserName.length !== 0 && this.password.length !== 0) {
+      if (this.addUserName.length !== 0) {
         this.addDialogFormVisible = false;
-        let newUser = { username: this.addUserName, password: this.password };
+        let newUser = { username: this.addUserName };
         axios
-          .put("/api/users", newUser)
+          .post("/api/users", newUser)
           .then((res) => {
-            console.log(res.data.success);
-            if (res.data.success) {
               this.getInfo();
               this.$message({
                 type: "success",
                 message: "添加成功!",
               });
               this.addUserName = "";
-              this.password = "";
-            } else {
-              this.$message.error("该用户已存在");
-            }
           })
           .catch((err) => {
             if (err.response.status === 401) {
@@ -249,7 +230,7 @@ export default {
             }
           });
       } else {
-        this.$message.error("用户名和密码不能为空");
+        this.$message.error("用户名不能为空");
       }
     },
   },

@@ -9,7 +9,7 @@ module.exports = {
     devServer: {
         proxy: {
             '/api': {
-                target: 'http://mharry.eastasia.cloudapp.azure.com:6001/',
+                target: 'http://localhost:6001/',
                 pathRewrite: { '^/api': '' },
                 changeOrigin: true,
             }
