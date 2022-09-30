@@ -45,6 +45,7 @@ export default {
           // 保存登录令牌
           let token = res.data.token;
           localStorage.setItem("TOKEN", token);
+          localStorage.removeItem("indexStrs");
           this.$message({
             type: "success",
             message: "登录成功!",

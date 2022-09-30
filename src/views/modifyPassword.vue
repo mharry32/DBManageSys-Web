@@ -59,32 +59,26 @@ export default {
       if (this.orginPassword !== this.newPassword) {
         if (this.orginPassword.length !== 0 && this.newPassword.length !== 0) {
           axios
-            .post("/api/users", {
-              id: this.currentId,
-              oldpassword: this.orginPassword,
-              newpassword: this.newPassword,
+            .post("/api/users/password", {
+              UserId: this.currentId,
+              OldPassword: this.orginPassword,
+              NewPassword: this.newPassword,
             })
             .then((res) => {
-              // console.log(res.data.success);
-              if (res.data.success === true) {
                 this.$message({
                   type: "success",
                   message: "修改成功!",
                 });
-                axios.post("/api/admin/logout");
                 this.$router.push("/admin/login");
-              } else {
-                this.$message.error("原密码输入错误！");
-              }
             })
             .catch((err) => {
               // 请求失败的操作
-              //   console.log(err);
+              console.log(err);
               //   console.log(err.response.status);
               if (err.response.status === 401) {
                 this.$router.push("/admin/login");
               } else {
-                this.$message.error("修改失败！");
+                this.$message.error(err.response.data)
               }
             });
         } else {
