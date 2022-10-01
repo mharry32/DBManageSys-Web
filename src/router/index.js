@@ -11,6 +11,7 @@ const modifyPassword = () => import('../views/modifyPassword.vue')
 const roleManage = () => import('../views/roleManage.vue')
 const permissionManage = () => import('../views/permissionManage.vue')
 const unitTestManage = () => import('../views/unitTestManage.vue')
+const dbMonitor = ()=>import('../views/dbmanage/dbMonitor.vue')
 
 // 1.安装插件
 Vue.use(VueRouter)
@@ -57,6 +58,10 @@ const routes = [
         path: '/unitTestManage',
         component: unitTestManage
       },
+      {
+        path:'/dbMonitor',
+        component:dbMonitor
+      }
     ]
   },
   {
