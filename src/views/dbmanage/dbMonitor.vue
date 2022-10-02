@@ -45,7 +45,7 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog :visible = "dbCheckDialogVisible">
+    <el-dialog :visible.sync = "dbCheckDialogVisible" destroy-on-close=true :before-close="handleClose">
         <db-check-dialog></db-check-dialog>
     </el-dialog>
   </div>
@@ -97,7 +97,14 @@ export default {
     },
     handleAdd(){
 
-    }
+    },
+    handleClose(done) {
+        this.$confirm('确认关闭？')
+          .then(_ => {
+            done();
+          })
+          .catch(_ => {});
+      }
   }
 };
 </script>
