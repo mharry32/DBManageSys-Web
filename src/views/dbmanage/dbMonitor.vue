@@ -6,21 +6,17 @@
       </el-table-column>
       <el-table-column prop="status" label="状态" width="100">
         <template slot-scope="scope">
-            <online-status-tag :onlineStatus = "scope.row.status"/>
-      </template>
+          <online-status-tag :onlineStatus="scope.row.status" />
+        </template>
       </el-table-column>
-    <el-table-column prop="lastUpdateTime" label="最后更新时间" width="200">
+      <el-table-column prop="lastUpdateTime" label="最后更新时间" width="200">
       </el-table-column>
       <el-table-column prop="manipualte" label="操作">
         <template slot-scope="scope">
-          <el-button
-            size="mini"
-            @click="handleCheck(scope.$index, scope.row)"
+          <el-button size="mini" @click="handleCheck(scope.$index, scope.row)"
             >查看</el-button
           >
-          <el-button
-            size="mini"
-            @click="handleEdit(scope.$index, scope.row)"
+          <el-button size="mini" @click="handleEdit(scope.$index, scope.row)"
             >编辑</el-button
           >
           <el-button
@@ -45,72 +41,70 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog :visible.sync = "dbCheckDialogVisible" destroy-on-close=true :before-close="handleClose">
-        <db-check-dialog></db-check-dialog>
+    <el-dialog
+      :visible.sync="dbCheckDialogVisible"
+      width="80%"
+      destroy-on-close="true"
+      :before-close="handleClose"
+    >
+      <db-check-dialog></db-check-dialog>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import DbCheckDialog from '../../components/dbCheckDialog.vue';
-import OnlineStatusTag from '../../components/onlineStatusTag.vue';
+import DbCheckDialog from "../../components/dbCheckDialog.vue";
+import OnlineStatusTag from "../../components/onlineStatusTag.vue";
 export default {
   name: "dbMonitor",
-  components:{
+  components: {
     OnlineStatusTag,
-    DbCheckDialog
+    DbCheckDialog,
   },
-  data(){
+  data() {
     return {
-        dbdatas:[
-            {
-                name:"测试",
-                address:"localhost",
-                status:0,
-                lastUpdateTime:"2022-09-30 15:00"
-            },
-            {
-                name:"测试2",
-                address:"localhost",
-                status:1,
-                lastUpdateTime:"2022-09-30 15:00"
-            },
-            {
-                name:"测试3",
-                address:"localhost",
-                status:2,
-                lastUpdateTime:"2022-09-30 15:00"
-            }
-        ],
-        dbCheckDialogVisible:false
-    }
+      dbdatas: [
+        {
+          name: "测试",
+          address: "localhost",
+          status: 0,
+          lastUpdateTime: "2022-09-30 15:00",
+        },
+        {
+          name: "测试2",
+          address: "localhost",
+          status: 1,
+          lastUpdateTime: "2022-09-30 15:00",
+        },
+        {
+          name: "测试3",
+          address: "localhost",
+          status: 2,
+          lastUpdateTime: "2022-09-30 15:00",
+        },
+      ],
+      dbCheckDialogVisible: false,
+    };
   },
-  methods:{
-    handleCheck(index,row){
-        this.dbCheckDialogVisible = true;
+  methods: {
+    handleCheck(index, row) {
+      this.dbCheckDialogVisible = true;
     },
-    handleEdit(index,row){
-
-    },
-    handleDelete(index,row){
-
-    },
-    handleAdd(){
-
-    },
+    handleEdit(index, row) {},
+    handleDelete(index, row) {},
+    handleAdd() {},
     handleClose(done) {
-        this.$confirm('确认关闭？')
-          .then(_ => {
-            done();
-          })
-          .catch(_ => {});
-      }
-  }
+      this.$confirm("确认关闭？")
+        .then((_) => {
+          done();
+        })
+        .catch((_) => {});
+    },
+  },
 };
 </script>
 
 <style scoped>
-
 .announce {
   width: 650px;
 }
