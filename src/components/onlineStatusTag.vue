@@ -7,8 +7,8 @@
 <script>
 export default {
   name: "onlineStatusTag",
-  props:{
-      onlineStatus: Number,
+  props: {
+    onlineStatus: Number,
   },
   computed: {
     type: function () {

@@ -2,14 +2,24 @@
   <div id="dbMonitor">
     <el-table :data="dbdatas" style="width: 100%">
       <el-table-column prop="name" label="名称" width="150"> </el-table-column>
-      <el-table-column prop="address" label="地址" width="200">
+      <el-table-column
+        prop="connectUrl"
+        label="地址"
+        :render-header="headSpanFit"
+      >
+      </el-table-column>
+      <el-table-column
+        prop="databaseType"
+        label="类型"
+        :render-header="headSpanFit"
+      >
       </el-table-column>
       <el-table-column prop="status" label="状态" width="100">
         <template slot-scope="scope">
           <online-status-tag :onlineStatus="scope.row.status" />
         </template>
       </el-table-column>
-      <el-table-column prop="lastUpdateTime" label="最后更新时间" width="200">
+      <el-table-column prop="lastUpdatedTime" label="最后更新时间" width="200">
       </el-table-column>
       <el-table-column prop="manipualte" label="操作">
         <template slot-scope="scope">
@@ -46,8 +56,18 @@
       width="80%"
       destroy-on-close="true"
       :before-close="handleClose"
+      :closed="closed"
     >
       <db-check-dialog></db-check-dialog>
+    </el-dialog>
+
+    <el-dialog
+      :visible.sync="dbEditDialogVisible"
+      destroy-on-close="true"
+      :before-close="handleClose"
+      :closed="closed"
+    >
+      <db-edit-dialog :dbId="editDbId"></db-edit-dialog>
     </el-dialog>
   </div>
 </template>
@@ -55,50 +75,68 @@
 <script>
 import DbCheckDialog from "../../components/dbCheckDialog.vue";
 import OnlineStatusTag from "../../components/onlineStatusTag.vue";
+import { RenderHeaderWidth } from "../../components/Methods/TableRender.js";
+import axios from "axios";
+import DbEditDialog from "../../components/dbEditDialog.vue";
+
 export default {
   name: "dbMonitor",
   components: {
     OnlineStatusTag,
     DbCheckDialog,
+    DbEditDialog,
   },
   data() {
     return {
-      dbdatas: [
-        {
-          name: "测试",
-          address: "localhost",
-          status: 0,
-          lastUpdateTime: "2022-09-30 15:00",
-        },
-        {
-          name: "测试2",
-          address: "localhost",
-          status: 1,
-          lastUpdateTime: "2022-09-30 15:00",
-        },
-        {
-          name: "测试3",
-          address: "localhost",
-          status: 2,
-          lastUpdateTime: "2022-09-30 15:00",
-        },
-      ],
+      dbdatas: [],
       dbCheckDialogVisible: false,
+      dbEditDialogVisible: false,
+      editDbId: -1,
+      loading: false,
     };
   },
+  created() {
+    this.getDbs();
+  },
   methods: {
+    getDbs() {
+      this.loading = true;
+      axios
+        .get("/api/dbmanage/db")
+        .then((res) => {
+          this.dbdatas = res.data;
+          this.loading = false;
+        })
+        .catch((err) => {
+          if (err.response.status === 401) {
+            this.$router.push("/admin/login");
+          } else {
+            this.$message("加载失败！");
+            this.loading = false;
+          }
+        });
+    },
     handleCheck(index, row) {
       this.dbCheckDialogVisible = true;
     },
     handleEdit(index, row) {},
     handleDelete(index, row) {},
-    handleAdd() {},
+    handleAdd() {
+      this.editDbId = -1;
+      this.dbEditDialogVisible = true;
+    },
     handleClose(done) {
       this.$confirm("确认关闭？")
         .then((_) => {
           done();
         })
         .catch((_) => {});
+    },
+    headSpanFit(h, { column, index }) {
+      RenderHeaderWidth(h, { column, index });
+    },
+    closed() {
+      this.getDbs();
     },
   },
 };

@@ -107,7 +107,7 @@ export default {
       currentEditedUserId: "",
       allRoles: [],
       role: "",
-      roleid:0
+      roleid: 0,
     };
   },
   created() {
@@ -134,14 +134,12 @@ export default {
     // 监听编辑按钮
     userRoleEdit(index, row) {
       this.editUserRoleVisible = true;
-        this.role = row.role;
-        if(row.role.id==0)
-        {
-          this.roleid = "";
-        }
-        else{
-          this.roleid = row.role.id;
-        }
+      this.role = row.role;
+      if (row.role.id == 0) {
+        this.roleid = "";
+      } else {
+        this.roleid = row.role.id;
+      }
       this.currentEditedUserName = row.userName;
       this.currentEditedUserId = row.id;
       axios.get("/api/users/roles").then((res) => {
@@ -184,7 +182,7 @@ export default {
       })
         .then(() => {
           axios
-            .delete("/api/users/"+row.id)
+            .delete("/api/users/" + row.id)
             .then((res) => {
               //   console.log(res);
               this.getInfo();
@@ -215,12 +213,12 @@ export default {
         axios
           .post("/api/users", newUser)
           .then((res) => {
-              this.getInfo();
-              this.$message({
-                type: "success",
-                message: "添加成功!",
-              });
-              this.addUserName = "";
+            this.getInfo();
+            this.$message({
+              type: "success",
+              message: "添加成功!",
+            });
+            this.addUserName = "";
           })
           .catch((err) => {
             if (err.response.status === 401) {
