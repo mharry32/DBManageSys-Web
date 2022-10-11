@@ -1,13 +1,11 @@
 <template>
-  <div id="dbEditDialog">
+  <div id="dbEditDialog" v-loading="Loading" element-loading-text="拼命加载中">
     <el-form
       ref="form"
       :model="db"
       :rules="rules"
       status-icon
-      label-width="80px"
-      v-loading="Loading"
-      element-loading-text="拼命加载中"
+      label-width="100px"
     >
       <el-form-item label="名称" prop="name">
         <el-input v-model="db.name"></el-input>
@@ -38,7 +36,6 @@
         </el-form-item>
 
         <el-button type="primary" @click="onSubmit">确认</el-button>
-        <el-button>取消</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -98,14 +95,14 @@ export default {
   },
   computed: {
     successText() {
-      if (this.db == -1) {
+      if (this.dbId == -1) {
         return "创建成功！";
       } else {
         return "编辑成功！";
       }
     },
     errorText() {
-      if (this.db == -1) {
+      if (this.dbId == -1) {
         return "创建失败！";
       } else {
         return "编辑失败！";
@@ -117,9 +114,26 @@ export default {
     axios.get("/api/dbmanage/dbtypes").then((res) => {
       this.dbTypeList = res.data;
       this.Loading = false;
+      this.db.databaseType.typeId = this.dbTypeList[0].typeId;
     });
     if (this.dbId != -1) {
       //Retrieve DBData to Edit
+      this.Loading = true;
+      axios
+        .get("/api/dbmanage/db/" + this.dbId)
+        .then((res) => {
+          this.db = res.data;
+          this.Loading = false;
+        })
+        .catch((err) => {
+          this.Loading = false;
+          if (err.response.status === 401) {
+            this.$router.push("/admin/login");
+          } else {
+            this.$message(this.errorText);
+            console.log(err);
+          }
+        });
     }
   },
   methods: {
@@ -131,14 +145,18 @@ export default {
         return axios.put(url, this.db);
       }
     },
+    closing() {
+      this.$emit("closing");
+    },
     onSubmit() {
       this.$refs["form"].validate((valid) => {
         if (valid) {
           this.Loading = true;
-          makeRequest()
+          this.makeRequest()
             .then((res) => {
               this.Loading = false;
               this.$message(this.successText);
+              this.closing();
             })
             .catch((err) => {
               this.Loading = false;
@@ -148,6 +166,7 @@ export default {
                 this.$message(this.errorText);
                 console.log(err);
               }
+              this.closing();
             });
         } else {
           return false;

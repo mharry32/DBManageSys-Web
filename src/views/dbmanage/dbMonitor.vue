@@ -1,18 +1,9 @@
 <template>
   <div id="dbMonitor">
     <el-table :data="dbdatas" style="width: 100%">
-      <el-table-column prop="name" label="名称" width="150"> </el-table-column>
-      <el-table-column
-        prop="connectUrl"
-        label="地址"
-        :render-header="headSpanFit"
-      >
-      </el-table-column>
-      <el-table-column
-        prop="databaseType"
-        label="类型"
-        :render-header="headSpanFit"
-      >
+      <el-table-column prop="name" label="名称"> </el-table-column>
+      <el-table-column prop="connectUrl" label="地址"> </el-table-column>
+      <el-table-column prop="databaseType.typeName" label="类型">
       </el-table-column>
       <el-table-column prop="status" label="状态" width="100">
         <template slot-scope="scope">
@@ -54,20 +45,17 @@
     <el-dialog
       :visible.sync="dbCheckDialogVisible"
       width="80%"
-      destroy-on-close="true"
       :before-close="handleClose"
-      :closed="closed"
     >
       <db-check-dialog></db-check-dialog>
     </el-dialog>
 
     <el-dialog
       :visible.sync="dbEditDialogVisible"
-      destroy-on-close="true"
       :before-close="handleClose"
-      :closed="closed"
+      v-if="dbEditDialogVisible"
     >
-      <db-edit-dialog :dbId="editDbId"></db-edit-dialog>
+      <db-edit-dialog @closing="editClosing" :dbId="editDbId"></db-edit-dialog>
     </el-dialog>
   </div>
 </template>
@@ -119,7 +107,10 @@ export default {
     handleCheck(index, row) {
       this.dbCheckDialogVisible = true;
     },
-    handleEdit(index, row) {},
+    handleEdit(index, row) {
+      this.editDbId = row.id;
+      this.dbEditDialogVisible = true;
+    },
     handleDelete(index, row) {},
     handleAdd() {
       this.editDbId = -1;
@@ -135,7 +126,8 @@ export default {
     headSpanFit(h, { column, index }) {
       RenderHeaderWidth(h, { column, index });
     },
-    closed() {
+    editClosing() {
+      this.dbEditDialogVisible = false;
       this.getDbs();
     },
   },
