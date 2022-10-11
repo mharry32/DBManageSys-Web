@@ -53,7 +53,7 @@ export default {
       this.$emit("row-click", row);
     },
     headSpanFit(h, { column, index }) {
-      RenderHeaderWidth(h, { column, index });
+      return RenderHeaderWidth(h, { column, index });
     },
   },
 };

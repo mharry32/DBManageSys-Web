@@ -1,24 +1,56 @@
 <template>
   <div>
-    <el-row :gutter="20">
-      <el-col :span="6"
-        ><div v-loading="treeLoading">
-          <el-tree lazy :load="loadNode" :props="props"></el-tree>
-        </div>
-      </el-col>
-      <el-col :span="18">
-        <div style="height: 400px">
-          <el-input></el-input>
-          <el-button @click="ExecSql">执行SQL</el-button>
-          <dynamic-table
-            v-if="dynamicTableShow"
-            :table-data="tableData"
-            :table-header="tableHeaders"
-            :height="'350px'"
-          ></dynamic-table>
-        </div>
-      </el-col>
-    </el-row>
+    <el-result
+      icon="error"
+      v-if="errorPageVisible"
+      title="加载错误"
+      subTitle="请关闭窗口重试"
+    >
+      <template slot="extra">
+        <el-button @click="closeWindow" type="primary" size="medium"
+          >关闭</el-button
+        >
+      </template>
+    </el-result>
+    <div v-loading="Loading" v-if="!errorPageVisible">
+      <el-row :gutter="20">
+        <el-col :span="6"
+          ><div>
+            <el-tree lazy :load="loadNode" :props="props"></el-tree>
+          </div>
+        </el-col>
+        <el-col :span="18">
+          <div style="height: 400px">
+            <el-form>
+              <el-form-item label="数据库:" prop="dbsource">
+                <el-select v-model="execDatabase" placeholder="请选择">
+                  <el-option
+                    v-for="item in databasesData"
+                    :key="item.name"
+                    :label="item.name"
+                    :value="item.name"
+                  >
+                  </el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="" prop="execSqlText">
+                <el-input v-model="execSqlText"></el-input>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="ExecSql">执行SQL</el-button>
+              </el-form-item>
+            </el-form>
+
+            <dynamic-table
+              v-if="dynamicTableShow"
+              :table-data="tableData"
+              :table-header="tableHeaders"
+              :height="'350px'"
+            ></dynamic-table>
+          </div>
+        </el-col>
+      </el-row>
+    </div>
   </div>
 </template>
 
@@ -39,7 +71,11 @@ export default {
         label: "name",
         isLeaf: "isLeaf",
       },
-      treeLoading: false,
+      Loading: false,
+      databasesData: [],
+      execDatabase: "",
+      execSqlText: "",
+      errorPageVisible: false,
     };
   },
   props: {
@@ -48,11 +84,14 @@ export default {
   components: {
     DynamicTable,
   },
+  created() {},
   methods: {
+    closeWindow() {
+      this.$emit("closeWindow");
+    },
     loadNode(node, resolve) {
       //如果展开第一级节点，从后台加载一级节点列表
       if (node.level == 0) {
-        this.treeLoading = true;
         this.loadDatabaseNode(resolve);
       }
       //如果展开其他级节点，动态从后台加载下一级节点列表
@@ -66,9 +105,19 @@ export default {
     },
     //加载第一级节点
     async loadDatabaseNode(resolve) {
-      const res = await axios.get("/api/dbschema/databases/" + this.dbId);
-      this.treeLoading = false;
-      return resolve(res.data);
+      try {
+        this.Loading = true;
+        const result = await axios.get("/api/dbschema/databases/" + this.dbId);
+
+        this.databasesData = result.data;
+        this.execDatabase = result.data[0].name;
+        this.Loading = false;
+        return resolve(result.data);
+      } catch (err) {
+        this.Loading = false;
+        this.errorPageVisible = true;
+        console.log(err);
+      }
     },
     //加载节点的子节点集合
     async loadTableNode(node, resolve) {

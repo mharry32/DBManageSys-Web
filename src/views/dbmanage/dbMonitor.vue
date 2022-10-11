@@ -48,7 +48,10 @@
       width="80%"
       :before-close="handleClose"
     >
-      <db-check-dialog :dbId="editDbId"></db-check-dialog>
+      <db-check-dialog
+        @closeWindow="closeCheckDialog"
+        :dbId="editDbId"
+      ></db-check-dialog>
     </el-dialog>
 
     <el-dialog
@@ -88,6 +91,9 @@ export default {
     this.getDbs();
   },
   methods: {
+    closeCheckDialog() {
+      this.dbCheckDialogVisible = false;
+    },
     getDbs() {
       this.loading = true;
       axios
