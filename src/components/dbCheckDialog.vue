@@ -142,40 +142,25 @@ export default {
     },
 
     ExecSql() {
-      this.dynamicTableShow = false;
-      this.tableHeaders = [
-        "Id",
-        "Name",
-        "NullName",
-        "DateData",
-        "Nums",
-        "NullDate",
-        "LongNum",
-      ];
-      this.tableData = [
-        {
-          Id: 1,
-          Name: "test!",
-          NullName: "",
-          DateData: "2022-10-08 17:54:56.7684",
-          Nums: 3.14159,
-          NullDate: "",
-          LongNum: 10000000000,
-        },
-        {
-          Id: 2,
-          Name: "test!2",
-          NullName: "not null",
-          DateData: "2022-10-08 17:54:56.7684",
-          Nums: 3.14159,
-          NullDate: "",
-          LongNum: 10000000000,
-        },
-      ];
-      this.$nextTick(() => {
-        // DOM现在更新了
-        this.dynamicTableShow = true;
-      });
+      let request = {
+        ServerId: this.dbId,
+        DatabaseName: this.execDatabase,
+        SqlText: this.execSqlText,
+      };
+      axios
+        .post("/dbschema/execsql", request)
+        .then((res) => {
+          let data = res.data;
+          this.dynamicTableShow = false;
+          //判断成功与否，失败需要增加一个提示文案（不是查询的sql也需要提示更新多少行的文案）
+          this.tableHeaders = [];
+          this.tableData = [];
+          this.$nextTick(() => {
+            // DOM现在更新了
+            this.dynamicTableShow = true;
+          });
+        })
+        .catch((err) => {});
     },
   },
 };
