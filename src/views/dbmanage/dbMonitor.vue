@@ -44,10 +44,11 @@
 
     <el-dialog
       :visible.sync="dbCheckDialogVisible"
+      v-if="dbCheckDialogVisible"
       width="80%"
       :before-close="handleClose"
     >
-      <db-check-dialog></db-check-dialog>
+      <db-check-dialog :dbId="editDbId"></db-check-dialog>
     </el-dialog>
 
     <el-dialog
@@ -105,13 +106,37 @@ export default {
         });
     },
     handleCheck(index, row) {
+      this.editDbId = row.id;
       this.dbCheckDialogVisible = true;
     },
     handleEdit(index, row) {
       this.editDbId = row.id;
       this.dbEditDialogVisible = true;
     },
-    handleDelete(index, row) {},
+    handleDelete(index, row) {
+      this.$confirm("此操作将永久删除数据库, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }).then(() => {
+        this.loading = true;
+        axios
+          .delete("/api/dbmanage/db/" + row.id)
+          .then((res) => {
+            this.$message("删除成功！");
+            this.loading = false;
+            this.getDbs();
+          })
+          .catch((err) => {
+            if (err.response.status === 401) {
+              this.$router.push("/admin/login");
+            } else {
+              this.$message("删除失败！");
+              this.loading = false;
+            }
+          });
+      });
+    },
     handleAdd() {
       this.editDbId = -1;
       this.dbEditDialogVisible = true;
