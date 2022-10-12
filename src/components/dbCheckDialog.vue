@@ -20,7 +20,7 @@
           </div>
         </el-col>
         <el-col :span="18">
-          <div style="height: 400px">
+          <div style="height: 500px; overflow: hidden" v-loading="execLoading">
             <el-form>
               <el-form-item label="数据库:" prop="dbsource">
                 <el-select v-model="execDatabase" placeholder="请选择">
@@ -45,8 +45,9 @@
               v-if="dynamicTableShow"
               :table-data="tableData"
               :table-header="tableHeaders"
-              :height="'350px'"
             ></dynamic-table>
+            <el-divider></el-divider>
+            <span>{{ execResultText }}</span>
           </div>
         </el-col>
       </el-row>
@@ -76,6 +77,8 @@ export default {
       execDatabase: "",
       execSqlText: "",
       errorPageVisible: false,
+      execResultText: "",
+      execLoading: false,
     };
   },
   props: {
@@ -142,29 +145,47 @@ export default {
     },
 
     ExecSql() {
+      this.execLoading = true;
       let request = {
         ServerId: this.dbId,
         DatabaseName: this.execDatabase,
         SqlText: this.execSqlText,
       };
       axios
-        .post("/dbschema/execsql", request)
+        .post("/api/dbschema/execsql", request)
         .then((res) => {
           let data = res.data;
           this.dynamicTableShow = false;
-          //判断成功与否，失败需要增加一个提示文案（不是查询的sql也需要提示更新多少行的文案）
-          this.tableHeaders = [];
-          this.tableData = [];
-          this.$nextTick(() => {
-            // DOM现在更新了
-            this.dynamicTableShow = true;
-          });
+          if (data.isSuccess) {
+            if (data.hasData) {
+              this.tableHeaders = JSON.parse(data.jsonHeader);
+              this.tableData = JSON.parse(data.jsonData);
+              this.$nextTick(() => {
+                // DOM现在更新了
+                this.dynamicTableShow = true;
+              });
+            } else {
+              this.execResultText = "受影响行数：" + data.rowsEffected;
+            }
+          } else {
+            this.execResultText = data.error;
+          }
+
+          this.execLoading = false;
         })
-        .catch((err) => {});
+        .catch((err) => {
+          this.execLoading = false;
+          if (err.response.status === 401) {
+            this.$router.push("/admin/login");
+          } else {
+            this.$message(this.errorText);
+            console.log(err);
+          }
+        });
     },
   },
 };
 </script>
 
-<style>
+<style scoped>
 </style>
