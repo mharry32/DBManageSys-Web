@@ -7,6 +7,11 @@
         width="300"
       ></el-table-column>
       <el-table-column
+        prop="lastLoginIP"
+        label="最后登录IP"
+        width="300"
+      ></el-table-column>
+      <el-table-column
         prop="role.name"
         label="角色"
         width="300"
