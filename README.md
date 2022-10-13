@@ -35,7 +35,8 @@
 项目克隆到本地后  
 - 安装依赖：npm install
 - 调试运行：npm run serve
-- 编译打包：npm run build
+- 编译打包：npm run build  
+
 后端项目：[DBManageSystem](https://github.com/mharry32/DBManageSystem)
 
 ## 设置说明：
