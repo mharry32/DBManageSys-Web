@@ -1,6 +1,6 @@
 <template>
   <div id="login">
-    <h2>公告管理系统</h2>
+    <h2>数据库管理后台</h2>
     <div class="content">
       <el-input
         placeholder="用户名"
