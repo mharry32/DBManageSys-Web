@@ -6,11 +6,7 @@
       v-loading="tableLoading"
       element-loading-text="拼命加载中"
     >
-      <el-table-column
-        prop="name"
-        label="角色"
-        width="300"
-      ></el-table-column>
+      <el-table-column prop="name" label="角色" width="300"></el-table-column>
       <el-table-column prop="manipualte" label="操作">
         <template slot-scope="scope">
           <el-button
@@ -82,6 +78,7 @@ export default {
   },
   methods: {
     getInfo() {
+      this.tableLoading = true;
       axios
         .get("/api/users/roles")
         .then((res) => {
@@ -94,6 +91,7 @@ export default {
             this.$router.push("/admin/login");
           } else {
             this.$message("加载失败！");
+            this.tableLoading = false;
           }
         });
     },
@@ -103,39 +101,34 @@ export default {
       this.pmsManageDialogVisible = true;
       this.editDialogLoading = true;
       this.isEditConfirmDisabled = true;
-  
+
       axios.get("/api/users/allmenus").then((res) => {
-        
         let treeData = res.data;
-        treeData.forEach(m=>{
-          m.nodeKey = 'm'+m.id;
-          m.subMenus.forEach(s=>{
-            s.nodeKey = 'm'+m.id+'s'+s.id;
-          })
-        })
+        treeData.forEach((m) => {
+          m.nodeKey = "m" + m.id;
+          m.subMenus.forEach((s) => {
+            s.nodeKey = "m" + m.id + "s" + s.id;
+          });
+        });
         this.allMenuData = treeData;
         this.currentRoleId = row.id;
-        axios
-          .get("/api/users/menusbyrole/" + row.id)
-          .then((res) => {
-            console.log(res.data);
-            let menuData = res.data;
-            let checkedKeys = [];
+        axios.get("/api/users/menusbyrole/" + row.id).then((res) => {
+          console.log(res.data);
+          let menuData = res.data;
+          let checkedKeys = [];
 
-            treeData.forEach(element => {
-              element.subMenus.forEach(
-                sub=>{
-                  if(menuData.indexOf(sub.id)!=-1){
-                    checkedKeys.push(sub.nodeKey)
-                  }
-                }
-              )
+          treeData.forEach((element) => {
+            element.subMenus.forEach((sub) => {
+              if (menuData.indexOf(sub.id) != -1) {
+                checkedKeys.push(sub.nodeKey);
+              }
             });
-
-            this.$refs.tree.setCheckedKeys(checkedKeys);
-            this.editDialogLoading = false;
-            this.isEditConfirmDisabled = false;
           });
+
+          this.$refs.tree.setCheckedKeys(checkedKeys);
+          this.editDialogLoading = false;
+          this.isEditConfirmDisabled = false;
+        });
       });
     },
 
@@ -157,12 +150,12 @@ export default {
 
       console.log(checkedNodes);
       let menuIds = [];
-      checkedNodes.forEach(main => {
-        if(!main.subMenus){
-            menuIds.push(main.id)
+      checkedNodes.forEach((main) => {
+        if (!main.subMenus) {
+          menuIds.push(main.id);
         }
       });
-      
+
       axios
         .put("/api/users/modifypermission", {
           roleid: this.currentRoleId,
@@ -177,7 +170,6 @@ export default {
           });
         });
     },
-
   },
 };
 </script>

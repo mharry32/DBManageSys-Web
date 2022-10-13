@@ -1,6 +1,6 @@
 <template>
   <div id="announceManage">
-    <el-table :data="userData" style="width: 100%">
+    <el-table :data="userData" v-loading="loading" style="width: 100%">
       <el-table-column
         prop="userName"
         label="用户"
@@ -113,6 +113,7 @@ export default {
       allRoles: [],
       role: "",
       roleid: 0,
+      loading: false,
     };
   },
   created() {
@@ -121,17 +122,20 @@ export default {
   },
   methods: {
     getInfo() {
+      this.loading = true;
       axios
         .get("/api/users")
         .then((res) => {
           // console.log(res.data);
           this.userData = res.data;
+          this.loading = false;
         })
         .catch((err) => {
           if (err.response.status === 401) {
             this.$router.push("/admin/login");
           } else {
             this.$message("加载失败！");
+            this.loading = false;
           }
         });
     },

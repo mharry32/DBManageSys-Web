@@ -6,11 +6,7 @@
       v-loading="tableLoading"
       element-loading-text="拼命加载中"
     >
-      <el-table-column
-        prop="name"
-        label="角色"
-        width="300"
-      ></el-table-column>
+      <el-table-column prop="name" label="角色" width="300"></el-table-column>
       <el-table-column prop="manipualte" label="操作">
         <template slot-scope="scope">
           <el-button
@@ -80,6 +76,7 @@ export default {
   },
   methods: {
     getInfo() {
+      this.tableLoading = true;
       axios
         .get("/api/users/roles")
         .then((res) => {
@@ -92,6 +89,7 @@ export default {
             this.$router.push("/admin/login");
           } else {
             this.$message("加载失败！");
+            this.tableLoading = false;
           }
         });
     },
@@ -106,7 +104,7 @@ export default {
         .then(() => {
           this.tableLoading = true;
           axios
-            .delete("/api/role/"+row.id)
+            .delete("/api/role/" + row.id)
             .then((res) => {
               //   console.log(res);
               this.getInfo();
@@ -141,14 +139,13 @@ export default {
           .post("/api/role", newRole)
           .then((res) => {
             // console.log(res.data.success);
-           
-              this.$message({
-                type: "success",
-                message: "添加成功!",
-              });
-              this.getInfo();
-              this.addRoleName = "";
-          
+
+            this.$message({
+              type: "success",
+              message: "添加成功!",
+            });
+            this.getInfo();
+            this.addRoleName = "";
           })
           .catch((err) => {
             if (err.response.status === 401) {
